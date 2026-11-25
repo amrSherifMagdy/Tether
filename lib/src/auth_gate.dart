@@ -5,7 +5,7 @@ import 'config.dart';
 import 'lang.dart';
 import 'models.dart';
 
-/// Email + password sign-in, sign-up (invite-only, email verification) and password reset.
+/// Email + password sign-in, sign-up (open, email verification) and password reset.
 /// Use the SAME account on the web console and the desktop app.
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key, required this.child});
@@ -81,14 +81,6 @@ class _AuthGateState extends State<AuthGate> {
         _pass2.clear();
       });
     } on AuthException catch (e) {
-      // The invite gate rejects emails that are not on the list with a generic database error.
-      if (e.message.toLowerCase().contains('database error')) {
-        throw AuthException(
-          pick(
-            'This email is not invited yet. Ask the owner to add it.  |  الإيميل ده لسه متدعاش. اطلب من صاحب التطبيق يضيفه.',
-          ),
-        );
-      }
       rethrow;
     }
   });

@@ -1,28 +1,11 @@
 -- Tether on Supabase. Run once in the SQL Editor (Run). Safe to re-run.
--- 1) Invite-only sign-up  2) per-user isolation (row level security)  3) frozen fields and status rules
+-- 1) Open sign-up (optional invite gate in closed_signup.sql)  2) per-user isolation (row level security)  3) frozen fields and status rules
 -- 4) realtime on the tables the app listens to.
 
--- ---------- invites (allowlist for sign-up) ----------
-create table if not exists public.invites (
-  email text primary key check (email = lower(email)),
-  note text,
-  created_at timestamptz not null default now()
-);
-alter table public.invites enable row level security;   -- no policies: nobody can read or write it through the API
-revoke all on public.invites from anon, authenticated;
-
-create or replace function public.gate_signup() returns trigger
-language plpgsql security definer set search_path = public as $$
-begin
-  if not exists (select 1 from public.invites i where i.email = lower(new.email)) then
-    raise exception 'This email is not invited to Tether';
-  end if;
-  return new;
-end $$;
-
+-- ---------- sign-up is open ----------
+-- Anyone can create an account (email confirmation stays on). Removes the old invite gate if it exists.
+-- For an invite-only project, run supabase/closed_signup.sql after this file.
 drop trigger if exists gate_signup on auth.users;
-create trigger gate_signup before insert on auth.users
-  for each row execute function public.gate_signup();
 
 -- ---------- sessions ----------
 create table if not exists public.sessions (

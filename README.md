@@ -7,14 +7,12 @@ You do **not** need to be technical. No terminal, no Flutter, no Git. Arabic: [R
 ## What you need
 
 - A Windows 10 or 11 laptop.
-- An email address the owner of Tether invited (ask the person who sent you here).
+- An email address you can open (Tether sends you a confirmation link).
 - An AI assistant that works with Tether. It does the technical part for you.
 
 ## 1. Download
 
 Open the **Releases** page of this repository (right side of the repo page, "Releases", then the newest one). Under **Assets**, click **Tether-windows.zip** (about 20 MB). Save it.
-
-You also need an invite: sign-up is closed to everyone except people the owner added.
 
 ## 2. Install (there is nothing to install)
 
@@ -28,7 +26,7 @@ If it says a DLL is missing: install the free "Microsoft Visual C++ Redistributa
 ## 3. First start
 
 1. Read the short notice and click **I understand**.
-2. Choose **Create account**. Use the invited email and a password you make up. Do not share this password in a chat.
+2. Choose **Create account**. Use your email and a password you make up. Do not share this password in a chat.
 3. Open the confirmation email, click the link (a page says "Email confirmed", you can close it), go back to Tether and sign in.
 4. Pick a **control mode** and click **Connect**:
    - **ASK**: Tether asks you before every click and every typing. Safest. Start here.

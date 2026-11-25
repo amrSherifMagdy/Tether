@@ -2,7 +2,7 @@
 
 ## Setup for a friend's assistant (no website needed for the friend)
 
-1. The friend installs the desktop app and signs up/in INSIDE the app (their email must be on the owner's invite list). The assistant uses the SAME email and password to act as controller. The password goes to the assistant only through a vault link, never chat.
+1. The friend installs the desktop app and signs up/in INSIDE the app. The assistant uses the SAME email and password to act as controller. The password goes to the assistant only through a vault link, never chat.
 2. Get the project: `git clone https://github.com/amrSherifMagdy/laptop-link` (needs access from the owner) or just the `scripts/lk.py` file. Needs Python 3 and `pip install cryptography`.
 3. Set env: LK_SUPABASE_URL (see lib/src/config.dart), LK_SUPABASE_KEY (the publishable key in the same file), LK_USER_FILE and LK_PASS_FILE (files holding the friend's email and password).
 4. Run `python3 scripts/lk.py pair`. Tell the friend the printed code (AB12-CD34) in chat. They check it matches the red Allow card on the laptop and tap Allow.

@@ -1,6 +1,6 @@
 # Tether (للاستخدام العادي)
 
-1. افتح صفحة **Releases** في الريبو ونزّل **Tether-windows.zip** (حوالي 20 ميجا). التسجيل بالدعوة بس: لازم صاحب التطبيق يضيف إيميلك.
+1. افتح صفحة **Releases** في الريبو ونزّل **Tether-windows.zip** (حوالي 20 ميجا).
 2. كليك يمين على الملف > **Extract All**، وحط الفولدر في مكان ثابت (مثلاً Documents)، وبعدين شغّل **Tether.exe**.
 3. لو ويندوز قال "Windows protected your PC": اضغط **More info** ثم **Run anyway**.
 4. اقرأ التنبيه واضغط "فاهم"، اعمل حساب بالإيميل اللي اتضاف لك، أكّد الإيميل، وسجّل دخول.
@@ -22,7 +22,7 @@
 ## الأمان
 
 1. كل صف في الداتابيز ملك صاحبه بس (Row Level Security بـ `auth.uid()`). حد تاني مش هيشوف شاشتك ولا أوامرك.
-2. التسجيل بالدعوة بس: لازم إيميلك يكون في جدول `invites` وإلا التسجيل بيترفض. وتأكيد الإيميل شغال.
+2. التسجيل مفتوح لأي حد بإيميل. وتأكيد الإيميل شغال.
 3. الطلب بعد ما يتبعت مبيتعدلش، والتحويل بين الحالات محمي (pending ثم running ثم done/failed)، والـ claim بيحصل مرة واحدة.
 4. البرنامج بيشتغل بس وهو مفتوح، وبيقبل بس الجلسة اللي هو فتحها بنفسه.
 5. الأوامر المسموحة خارج الجلسة في `assets/allowlist.json` ومحتاجة موافقتك على اللاب.
@@ -31,11 +31,11 @@
 ## للأدمن (صاحب المشروع): الإعداد مرة واحدة
 
 1. اعمل حساب على https://supabase.com وأنشئ Project جديد (خطة Free كفاية). اختار ريجن قريب (مثلا Frankfurt).
-2. من **SQL Editor** الصق محتوى `supabase/schema.sql` واضغط Run. بعدها الصق `supabase/invites.sql` (بعد ما تعدّل الإيميلات) واضغط Run.
+2. من **SQL Editor** الصق محتوى `supabase/schema.sql` واضغط Run. (اختياري لو عايز تسجيل بالدعوة بس: شغّل `supabase/closed_signup.sql`).
 3. من **Project Settings > API** خد الـ **Project URL** والـ **anon (publishable) key**. الاتنين عاديين وعامين (الأمان في الـ RLS). **متديش حد الـ service_role key**.
 4. من **Authentication > URL Configuration** خلي الـ **Site URL** = `https://tether-link.web.app` (رابط الويب بتاعك). من **Authentication > Providers > Email** سيب **Confirm email** شغال.
 5. حط القيمتين في `lib/src/config.dart` (أو مرّرهم بـ `--dart-define`).
-6. لإضافة صاحب: ضيف إيميله في جدول `invites` (من SQL Editor: `insert into invites(email) values ('friend@example.com');`). وبعدين هو يدوس Sign up ويأكد الإيميل.
+6. أي حد يقدر يسجّل بنفسه ويأكد إيميله. لو عايز تقفل التسجيل شغّل `supabase/closed_signup.sql`.
 7. ملحوظة: Supabase المجاني بيبعت عدد قليل من إيميلات التأكيد في الساعة. لو كتير هتحتاج تربط SMTP خاص (Authentication > SMTP).
 
 ## تشغيل البرنامج
@@ -56,7 +56,7 @@ flutter run -d windows --release
 flutter build windows --release
 ```
 
-اضغط فولدر `build\windows\x64\runner\Release` كله ZIP وابعته. الصاحب بيفك الـ ZIP ويشغّل `Tether.exe` (محتاج Microsoft Visual C++ Redistributable لو مش متثبت). بيسجّل بإيميله بعد ما تضيفه في `invites`.
+اضغط فولدر `build\windows\x64\runner\Release` كله ZIP وابعته. الصاحب بيفك الـ ZIP ويشغّل `Tether.exe` (محتاج Microsoft Visual C++ Redistributable لو مش متثبت). بيسجّل بإيميله بنفسه.
 الخصوصية: السحابة (Supabase) مجرد وسيط مؤقت للأوامر. اللقطة (جدول `frames`، صورة base64 واحدة لكل جلسة) بتتمسح فور ما المساعد يسحبها، وبعد 60 ثانية من آخر رفع، وأول ما الجلسة تخلص، وكـ backstop كل دقيقة بـ `lk_cleanup()` (pg_cron). الأوامر والإجراءات المنتهية بتتمسح بعد قراءة النتيجة أو بعد 10 دقايق، والجلسات المنتهية بعد يوم. السجل الكامل لكل إجراء موجود بس في اللوج المحلي على اللابتوب (`laptop_link.log`). لو pg_cron مش متفعّل (Database > Extensions) فالمسح من التطبيق والمساعد شغال برضه.
 
 ## المساعد (Instinct)

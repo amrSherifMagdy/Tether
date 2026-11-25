@@ -51,7 +51,7 @@ This is a safety net, not a guarantee. Use ASK when you want to see everything.
 - **Pairing is decided on the laptop only.** Each assistant has its own Ed25519 key. It registers a *request* in the cloud, the laptop shows a red card with a short code (like `AB12-CD34`), and you tap Allow only if the code matches the one your assistant told you. The approved list is stored in a local file on the laptop. The cloud cannot add to it.
 - **Every action is signed** by an approved key. Unsigned or badly signed actions are rejected and logged.
 - **Per-user isolation** with row level security: one account cannot read or write another account's sessions, actions or screenshots. `scripts/isolation_test.py` tries to break this and prints PASS or FAIL for each check.
-- **Invite-only sign-up.** (Keep real emails out of the repo: `supabase/invites.sql` only has placeholders.) Only emails in the `invites` table can create an account. Email confirmation is required.
+- **Open sign-up with email confirmation.** Anyone can create an account; row level security keeps accounts apart. For an invite-only project run `supabase/closed_signup.sql` (it adds an allowlist table and a trigger). Keep real emails out of the repo. Abuse: see "Sign-up limits" below.
 - **Transient cloud data.** A screenshot is deleted as soon as the assistant fetches it, after 60 seconds, and when the session ends. Actions are deleted after the result is read or after 10 minutes. A `pg_cron` job (`lk_cleanup`) runs every minute as a backstop. The full history exists only in the local log on the laptop (`laptop_link.log`).
 - **No passwords are ever typed** by the assistant. Do not ask it to.
 - **Limits you should know:** the Supabase project owner is the administrator of the relay and can see data while it passes through (screenshots live for seconds). The app is not code-signed, so Windows SmartScreen shows a warning on first run.
@@ -61,7 +61,7 @@ This is a safety net, not a guarantee. Use ASK when you want to see everything.
 
 1. Download `Tether-windows.zip` from the Releases page, unzip it, run `Tether.exe`. If Windows reports a missing DLL, install the Microsoft Visual C++ Redistributable (x64).
 2. Read the first-run notice and tap "I understand".
-3. Create an account inside the app with an invited email. Click the link in the confirmation email (it opens a page that says "Email confirmed"), then return to the app and sign in.
+3. Create an account inside the app with your email. Click the link in the confirmation email (it opens a page that says "Email confirmed"), then return to the app and sign in.
 4. Pair your assistant (see below).
 
 The app has an English / Arabic switch in the header. The choice is remembered.
@@ -92,20 +92,24 @@ Coordinates are screenshot pixels. The latest screenshot is saved to `/tmp/lk_fr
 
 A friend does not use the website.
 
-1. The owner adds the friend's email to `invites` (see setup).
+1. Nothing to do for the owner (sign-up is open).
 2. The friend installs the app, signs up and signs in inside the app.
 3. The friend's own assistant uses the same email and password (given to it through a private vault link, never in chat), runs `lk.py pair`, and tells the friend the code in their own chat.
 4. The friend compares the code with the red card on the laptop and taps Allow.
 
 The friend can stop it with the STOP button or the hotkey, and can remove the assistant in Advanced.
 
+## Sign-up limits (open sign-up)
+
+Sign-up spam can fill the project with fake users and burn the email quota. Mitigations: keep **Confirm email** on; set custom SMTP (the default mailer sends only ~2 emails an hour); in Supabase Authentication > Rate Limits lower sign-ups per hour; optionally enable CAPTCHA (Authentication > Attack Protection). If it gets abused, switch to invite-only with `supabase/closed_signup.sql`.
+
 ## Owner setup (Supabase)
 
-1. Create a Supabase project. In the SQL Editor run `supabase/schema.sql`, then `supabase/invites.sql` (edit the emails first).
+1. Create a Supabase project. In the SQL Editor run `supabase/schema.sql`, (optional: `supabase/closed_signup.sql` for invite-only).
 2. Authentication > URL Configuration: set Site URL to your web console URL and add it under Redirect URLs.
 3. Authentication > Providers > Email: keep "Confirm email" on.
 4. Put the project URL and the publishable key in `lib/src/config.dart` and `site/config.js`.
-5. To add a user later: `insert into invites(email) values ('friend@example.com');`
+5. Invite-only instead of open: run `supabase/closed_signup.sql`, add people with `insert into invites(email) values ('friend@example.com');`.
 6. Optional, enable the `pg_cron` extension (Database > Extensions) for the one-minute cleanup.
 
 **Email limits.** The default Supabase mailer only sends to members of your Supabase organization and is limited to about 2 emails per hour, so friends' confirmation emails will fail. Configure custom SMTP under Authentication > Emails > SMTP Settings before inviting people.
@@ -143,7 +147,7 @@ firebase deploy --only hosting --project <your-project> --config firebase.hostin
 | `lib/` | Flutter desktop app (session, pairing, tray, native Windows input and capture, UI) |
 | `assets/` | icons, logo, PowerShell fallback scripts, command allowlist |
 | `site/` | static web page |
-| `supabase/` | SQL: schema and policies, invites, alerts, cleanup |
+| `supabase/` | SQL: schema and policies, optional closed sign-up, alerts, cleanup |
 | `scripts/` | `lk.py` assistant client, `isolation_test.py` |
 | `release/` | release workflow and release notes |
 | `ASSISTANT.md` | instructions for an assistant that drives a laptop |

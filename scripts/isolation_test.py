@@ -51,12 +51,10 @@ s, r = call(f'/rest/v1/actions?id=eq.{aid}', {'user_id': ub}, A, 'PATCH', 'retur
 s, r = call('/rest/v1/actions', {'session_id': sid, 'type': 'shell', 'params': {}}, A, 'POST'); check('A cannot use an unknown action type', s >= 400)
 s, r = call(f'/rest/v1/actions?id=eq.{aid}', {'status': 'running'}, A, 'PATCH', 'return=representation'); check('A can claim own pending action', s == 200 and len(r) == 1)
 s, r = call(f'/rest/v1/actions?id=eq.{aid}&status=eq.pending', {'status': 'running'}, A, 'PATCH', 'return=representation'); check('a second claim finds nothing', s == 200 and r == [])
-s, r = call('/rest/v1/invites?select=*', tok=A); check('A cannot read the invite list', s >= 400 or r == [])
 s, r = call('/rest/v1/sessions', {'status': 'active', 'expires_at': '2999-01-01T00:00:00Z', 'duration_minutes': 5}, A, 'POST'); check('A cannot make a far-future expiry', s >= 400)
 
 s, r = call(f'/rest/v1/sessions?id=eq.{sid}', {'status': 'stopped'}, A, 'PATCH', 'return=representation'); check('A stops own session', s == 200 and len(r) == 1)
 s, r = call('/rest/v1/actions', {'session_id': sid, 'type': 'screenshot', 'params': {}}, A, 'POST'); check('no new actions in a stopped session', s >= 400)
-s, r = call('/auth/v1/signup', {'email': 'not-invited-test@example.com', 'password': 'Aa1!aaaaaaaa'}); check('sign-up with an uninvited email is refused', s >= 400)
 import base64 as _b
 s, r = call('/rest/v1/controllers', {'name': 'iso-test', 'public_key': _b.b64encode(b'\x01' * 32).decode()}, A, 'POST', 'return=representation'); check('A registers a controller (pairing request)', s == 201)
 cid = r[0]['id'] if s == 201 else None
