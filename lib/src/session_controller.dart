@@ -218,7 +218,7 @@ class SessionController extends ChangeNotifier {
     }
   }
 
-  static const _barSize = Size(680, 66);
+  static const _barSize = Size(580, 80);
   _BarGuard? _barGuard;
 
   /// The bar has one fixed size: no maximize, no resize (mouse, keyboard, Win+Up, title double-click),
