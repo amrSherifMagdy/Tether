@@ -317,6 +317,9 @@ class SessionController extends ChangeNotifier {
       );
       return;
     }
+    // Optional "shot": false skips the screenshot after this action (and its "then" steps). Default is true.
+    // Use it for obvious steps (click a known search box and type) so no frame is captured or uploaded.
+    final wantShot = params.remove('shot') != false;
     var err = _validate(type, params);
     // Optional "then": a short list of follow-up actions run in order, with ONE result frame at the end.
     // Every step goes through the same validation as a single action.
@@ -393,6 +396,10 @@ class SessionController extends ChangeNotifier {
             'step ${i + 2} ($st) failed: $e. Done so far: $result',
           );
         }
+      }
+      if (!wantShot && type != 'screenshot') {
+        await _finish(aid, Status.done, '$result (no screenshot, shot=false)');
+        return;
       }
       if (type != 'screenshot') {
         await Future.delayed(const Duration(milliseconds: 150));

@@ -5,6 +5,7 @@ Same login and same row level security as the web console. Credentials are read 
 
   lk.py send '<action json>' [--wait SECS]   submit one action (may include "then": [...]), wait for result, save frame
   lk.py frame                                just save the latest frame
+  lk.py send '<json>' --noshot   (or "shot":false in the JSON) skip the screenshot after the action
   lk.py pair                                 register this controller's key; prints the code to compare on the laptop
 Every action is signed with this controller's Ed25519 key (LK_KEY_FILE, default ~/.lk/controller.seed, created on first use).
 The laptop only runs actions from controllers approved there once (Allow button in the red bar). Needs the `cryptography` package.
@@ -126,6 +127,8 @@ def main():
     cid = cached('cid:' + key()[1], 3600, lambda: register(tok)[0])
     code = key()[2]; code = f'{code[:4]}-{code[4:]}'
     act = json.loads(a[1]); typ = act.pop('type')
+    noshot = '--noshot' in a or act.get('shot') is False
+    if noshot: act['shot'] = False   # no screenshot after this action (obvious steps): faster, nothing uploaded
     wait = float(a[a.index('--wait') + 1]) if '--wait' in a else 40
     t0 = time.time()
     k = key()[0]
@@ -159,7 +162,7 @@ def main():
             forget('cid:' + key()[1]); cleanup(aid, False); return
         if st in ('done', 'failed', 'rejected'):
             print(f"{st} in {time.time()-t0:.1f}s:", f.get('result') or '')
-            if st == 'done': frame(tok, sid, aid, delete=False)
+            if st == 'done' and not noshot: frame(tok, sid, aid, delete=False)
             cleanup(aid, st == 'done')
             return
         if st == 'pending' and not rechecked and time.time() - t0 > 6:

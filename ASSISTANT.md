@@ -45,6 +45,14 @@ Any session action may carry `"then": [ ...up to 15 more actions... ]`. They run
     LK_SUPABASE_URL=... LK_SUPABASE_KEY=<anon> LK_USER_FILE=... LK_PASS_FILE=... python3 scripts/lk.py send '<action json>' --wait 30   # prints result, saves /tmp/lk_frame.jpg
     python3 scripts/lk.py frame
 
+## Speed: skip screenshots on obvious steps
+
+Add `"shot": false` to any action (or pass `--noshot` to lk.py) and the desktop skips the screenshot after it: no capture, no upload, no 150 ms wait. Use it when you already know where things are, for example click a known search box and type:
+
+    {"type":"click","x":400,"y":120,"shot":false,"then":[{"type":"type","text":"report.pdf"},{"type":"key","combo":"enter"}]}
+
+The default is unchanged (a screenshot after every action). Take a screenshot only when you need to check the result. Never use `shot:false` before a close, delete or sign-in step: check focus first.
+
 ## Pause
 
 The person at the laptop can press PAUSE on the bar (or Pause in the tray menu). While paused every action, including screenshot, comes back `rejected: paused ...`. Do not retry in a loop: tell the user and wait. Only they can press Resume.
