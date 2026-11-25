@@ -1,7 +1,7 @@
 name: laptop_link
 description: Control allowlisted programs on your laptop remotely, with local approval for every command.
 publish_to: none
-version: 0.1.0
+version: 1.0.1
 
 environment:
   sdk: ">=3.3.0 <4.0.0"

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'allowlist.dart';
+import 'extras.dart';
 import 'command_runner.dart';
 import 'local_log.dart';
 import 'account_menu.dart';
@@ -41,6 +42,10 @@ class _DesktopPageState extends State<DesktopPage> {
     _session = SessionController(_uid, _log);
     _tray = AppTray(_session, _log);
     _session.loadMode();
+    checkForUpdate();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) offerShortcutOnce(context);
+    });
     _session.watchPairing();
     _tray.init().catchError((e) => _log.add('tray init failed: $e'));
     // Live as soon as the app opens, but only once a control mode has been chosen (loadMode starts it).

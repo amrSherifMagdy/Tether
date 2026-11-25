@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'account_menu.dart';
 import 'allowlist.dart';
 import 'approval.dart';
+import 'extras.dart';
 import 'lang.dart';
 import 'session_controller.dart';
 import 'tray.dart';
@@ -141,6 +142,7 @@ class _HomeViewState extends State<HomeView> {
                     ),
                   ),
                 const SizedBox(height: 16),
+                const UpdateBanner(),
                 _modeCard(context, s),
                 const SizedBox(height: 16),
                 ValueListenableBuilder<bool>(
@@ -191,7 +193,7 @@ class _HomeViewState extends State<HomeView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Bi('Control mode', 'وضع التحكم', bold: true),
-            Text('build $kBuild', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+            Text('v$kVersion  build $kBuild', style: const TextStyle(fontSize: 11, color: Colors.grey)),
             if (!s.modeChosen)
               Padding(
                 padding: const EdgeInsets.only(top: 4),

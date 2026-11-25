@@ -1,4 +1,4 @@
-import 'dart:io' show Platform;
+import 'dart:io' show Platform, exit;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -11,8 +11,13 @@ import 'src/consent.dart';
 import 'src/lang.dart';
 import 'src/console_page.dart';
 import 'src/desktop_page.dart';
+import 'src/extras.dart';
 
 Future<void> main() async {
+  // Only one Tether at a time: a second launch brings the first window to the front and exits.
+  if (!kIsWeb && Platform.isWindows && !acquireSingleInstance()) {
+    exit(0);
+  }
   WidgetsFlutterBinding.ensureInitialized();
   if (!kIsWeb && Platform.isWindows) {
     await windowManager.ensureInitialized();
