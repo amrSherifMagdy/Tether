@@ -1,0 +1,48 @@
+name: release
+# Push a tag like v1.0.0 to build the Windows app and publish it as a release of this repo.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v1.0.0)'
+        required: true
+jobs:
+  windows:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Windows runner files
+        run: flutter create --platforms=windows --project-name laptop_link .
+      - name: Rename program to Tether.exe and set the window title
+        shell: pwsh
+        run: ./scripts/rename-exe.ps1
+      - name: App icon
+        shell: pwsh
+        run: Copy-Item assets\app_icon.ico windows\runner\resources\app_icon.ico -Force
+      - run: flutter pub get
+      - run: flutter build windows --release
+      - name: Package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath dist\Tether-windows.zip
+          New-Item -ItemType Directory -Force kit | Out-Null
+          Copy-Item scripts\lk.py, ASSISTANT.md kit\
+          Compress-Archive -Path kit\* -DestinationPath dist\assistant-kit.zip
+          Copy-Item scripts\lk.py dist\lk.py
+          Copy-Item ASSISTANT.md dist\ASSISTANT.md
+      - name: Publish release
+        shell: pwsh
+        run: |
+          gh release create $env:TAG --repo $env:GITHUB_REPOSITORY --title "Tether $env:TAG" --notes-file release\RELEASE_NOTES.md dist\Tether-windows.zip dist\assistant-kit.zip dist\lk.py dist\ASSISTANT.md

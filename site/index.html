@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="theme-color" content="#fbf8ff">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tether</title>
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<meta name="description" content="Tether: let your own assistant help on your laptop, only while you allow it.">
+<meta property="og:title" content="Tether">
+<meta property="og:description" content="Let your own assistant help on your laptop, only while you allow it.">
+<meta property="og:image" content="https://tether-link.web.app/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root{--c:#4355b9;--cc:#dfe0ff;--on:#fff;--bg:#fbf8ff;--card:#f1f0f9;--tx:#1b1b21;--mut:#5c5d67;--line:#767680}
+  *{-webkit-tap-highlight-color:transparent}
+  body{font-family:Roboto,system-ui,"Segoe UI",Tahoma,Arial,sans-serif;margin:0;background:var(--bg);color:var(--tx)}
+  header{background:var(--bg);color:var(--tx);padding:0 8px 0 16px;height:56px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:4}
+  header h1{font-size:22px;font-weight:400;margin:0;flex:1}
+  header button{background:none;color:var(--c);border:0;border-radius:20px;padding:8px 12px;cursor:pointer;font:inherit;font-size:14px;font-weight:500}
+  header button:hover{background:#4355b914}
+  main{max-width:520px;margin:12px auto 32px;padding:0 24px}
+  .card{background:var(--card);border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px #0003,0 1px 2px #0002}
+  h2{font-size:20px;font-weight:500;margin:0 0 12px}
+  input,textarea{font:inherit;width:100%;box-sizing:border-box;padding:14px 12px;margin:6px 0;border:1px solid var(--line);border-radius:4px;background:transparent;color:var(--tx)}
+  input:focus,textarea:focus{outline:2px solid var(--c);outline-offset:-1px;border-color:var(--c)}
+  button.p{font:inherit;background:var(--c);color:var(--on);border:0;border-radius:20px;padding:10px 24px;cursor:pointer;font-weight:500;font-size:14px;letter-spacing:.1px}
+  button.p:hover{box-shadow:0 1px 3px #0004}
+  button.p.big{width:100%;font-size:15px;padding:14px 24px;border-radius:28px}
+  button.s{font:inherit;background:var(--cc);color:#00105c;border:0;border-radius:20px;padding:10px 20px;cursor:pointer;font-weight:500;font-size:14px}
+  button.l{font:inherit;background:none;border:0;color:var(--c);cursor:pointer;padding:8px 12px;border-radius:20px;font-weight:500;font-size:14px}
+  button.l:hover{background:#4355b914}
+  .muted{color:var(--mut);font-size:13px}.err{color:#ba1a1a}.ok{color:#2e7d32}
+  .status{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:700}
+  .dot{width:16px;height:16px;border-radius:50%;background:#9e9e9e;flex:none}
+  .dot.on{background:#2e7d32}.dot.wait{background:#c62828}.dot.off{background:#757575}
+  .code{font-size:30px;font-weight:700;letter-spacing:3px;text-align:center;margin:8px 0}
+  #frame{max-width:100%;border:1px solid var(--line);border-radius:8px;cursor:crosshair;display:block;margin:8px 0}
+  .hidden{display:none!important}
+  details summary{cursor:pointer;font-weight:500;padding:4px 0}
+  .lockup{display:block;margin:4px auto 14px;width:180px;border-radius:14px}
+  .menu{position:relative}
+  #menu{position:absolute;right:0;top:44px;background:#efedf6;color:var(--tx);border-radius:4px;box-shadow:0 2px 8px #0004;min-width:200px;z-index:5;overflow:hidden}
+  [dir=rtl] #menu{right:auto;left:0}
+  #menu div{padding:12px 16px;cursor:pointer}#menu div:hover{background:#e3e1ec}#menu .em{cursor:default;color:var(--mut);font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <img src="img/logo-48.png" width="30" height="30" alt="" style="border-radius:7px">
+  <h1>Tether</h1>
+  <button id="lang">العربية</button>
+  <div class="menu hidden" id="acct"><button id="acctbtn">☰ <span id="who"></span></button>
+    <div id="menu" class="hidden"><div class="em" id="menuemail"></div><div id="m-pw" data-t="menu_pw"></div><div id="m-out" data-t="menu_out"></div></div></div>
+</header>
+<main>
+  <div id="banner" class="card hidden"></div>
+
+  <div id="auth" class="card hidden">
+    <img class="lockup" src="img/logo-lockup.jpg" alt="Tether">
+    <h2 id="authtitle"></h2>
+    <input id="email" type="email" data-ph="email" autocomplete="username">
+    <input id="pass" type="password" data-ph="password" autocomplete="current-password">
+    <input id="pass2" type="password" data-ph="password2" class="hidden" autocomplete="new-password">
+    <button class="p big" id="go"></button>
+    <div><button class="l" id="toggle"></button><button class="l" id="forgot" data-t="forgot"></button></div>
+    <div id="authmsg"></div>
+    <p class="muted" data-t="invite_note"></p>
+  </div>
+
+  <div id="recovery" class="card hidden">
+    <h2 data-t="new_pw_title"></h2>
+    <input id="rpass" type="password" data-ph="new_pw" autocomplete="new-password">
+    <button class="p big" id="rgo" data-t="save"></button><div id="rmsg"></div>
+  </div>
+
+  <div id="changepw" class="card hidden">
+    <h2 data-t="menu_pw"></h2>
+    <input id="cur" type="password" data-ph="cur_pw" autocomplete="current-password">
+    <input id="np1" type="password" data-ph="new_pw" autocomplete="new-password">
+    <input id="np2" type="password" data-ph="new_pw2" autocomplete="new-password">
+    <button class="p" id="cpgo" data-t="save"></button> <button class="l" id="cpcancel" data-t="cancel"></button><div id="cpmsg"></div>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="card">
+      <div class="status"><span class="dot" id="dot"></span><span id="stat"></span></div>
+      <p class="muted" id="statsub"></p>
+    </div>
+
+    <div class="card" id="pairbox">
+      <h2 data-t="pair_title"></h2>
+      <p data-t="pair_text"></p>
+      <div class="code" id="code">----</div>
+      <button class="p" id="pairbtn" data-t="pair_btn"></button>
+      <div id="pairmsg" class="muted"></div>
+    </div>
+
+    <div class="card" id="screen">
+      <h2 data-t="screen_title"></h2>
+      <button class="p big" id="ashot" data-t="shot_btn"></button>
+      <img id="frame" class="hidden" alt="">
+      <div class="muted" id="coords"></div>
+      <div class="muted" data-t="frame_note"></div>
+      <div id="amsg"></div>
+    </div>
+
+  </div>
+</main>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+import { identity, fingerprint, signAction } from './sign.js';
+
+const T = {
+  en: {
+    signin:'Sign in', signup:'Create account', have:'I already have an account', no_acct:'Create a new account', forgot:'Forgot password',
+    email:'Email', password:'Password', password2:'Password again', cur_pw:'Current password', new_pw:'New password (8+ characters)', new_pw2:'New password again',
+    invite_note:'New here? Tap "Create a new account". You need to be invited first: ask the owner to add your email. You will get a verification email.',
+    menu_pw:'Change password', menu_out:'Sign out', save:'Save', cancel:'Cancel', send:'Send', new_pw_title:'Choose a new password',
+    s_on:'Laptop connected', s_on_sub:'Your laptop is online and the assistant can work on it.',
+    s_off:'Laptop not connected', s_off_sub:'Open Tether on your laptop and press "Connect the assistant".',
+    s_wait:'Waiting for your approval on the laptop', s_wait_sub:'Look at your laptop: tap Allow if the code matches.',
+    pair_title:'Allow this browser', pair_text:'To control your laptop from here, approve this browser once on the laptop. Press the button, then tap Allow on the laptop when you see this code:',
+    pair_btn:'Ask the laptop to allow this browser', pair_sent:'Request sent. Now tap Allow on your laptop.', 
+    screen_title:'Your laptop screen', shot_btn:'Take a screenshot', frame_note:'The picture is kept in the cloud for about a minute only. Click the picture to choose a spot to click.',
+
+    v_ok_in:'Account verified. You are signed in.', v_ok:'Account verified. You can sign in now.', v_bad:'That link is invalid or expired. Sign in, or use Forgot password.',
+    t_checkmail:'Check your email and click the verification link, then come back and sign in.', t_reset:'If that email has an account, a reset link is on its way.',
+    e_fill:'Type your email and password.', e_len:'Password must be at least 8 characters.', e_match:'The two passwords do not match.', e_email:'Type your email first.',
+    pw_done:'Password changed.', pw_wrong:'Current password is wrong.', sent:'Sent.', sent_cmd:'Sent. Approve it on the laptop.', no_session:'The laptop is not connected.', bad_json:'That is not valid JSON.',
+    coords:(x,y)=>`Click spot x=${x}, y=${y} put in Advanced. Press "Send" there to click.`,
+  },
+  ar: {
+    signin:'تسجيل الدخول', signup:'إنشاء حساب', have:'عندي حساب', no_acct:'إنشاء حساب جديد', forgot:'نسيت الباسورد',
+    email:'الإيميل', password:'الباسورد', password2:'الباسورد تاني', cur_pw:'الباسورد الحالي', new_pw:'الباسورد الجديد (8 حروف أو أكتر)', new_pw2:'الباسورد الجديد تاني',
+    invite_note:'جديد هنا؟ اضغط "إنشاء حساب جديد". لازم يكون صاحب المشروع أضاف إيميلك الأول. هيجيلك إيميل تأكيد.',
+    menu_pw:'تغيير الباسورد', menu_out:'تسجيل الخروج', save:'حفظ', cancel:'إلغاء', send:'إرسال', new_pw_title:'اختار باسورد جديد',
+    s_on:'اللابتوب متصل', s_on_sub:'اللابتوب شغال والمساعد يقدر يشتغل عليه.',
+    s_off:'اللابتوب مش متصل', s_off_sub:'افتح Tether على اللابتوب واضغط "وصّل المساعد".',
+    s_wait:'في انتظار موافقتك على اللابتوب', s_wait_sub:'بص على اللابتوب: اضغط Allow لو الكود مطابق.',
+    pair_title:'السماح للمتصفح ده', pair_text:'علشان تتحكم في اللابتوب من هنا، لازم توافق على المتصفح ده مرة واحدة على اللابتوب. اضغط الزرار وبعدين اضغط Allow على اللابتوب لما تشوف الكود ده:',
+    pair_btn:'اطلب من اللابتوب يسمح للمتصفح ده', pair_sent:'اتبعت الطلب. دلوقتي اضغط Allow على اللابتوب.',
+    screen_title:'شاشة اللابتوب', shot_btn:'خد لقطة شاشة', frame_note:'الصورة بتتحفظ على السحابة حوالي دقيقة بس. اضغط على الصورة علشان تختار مكان للضغط.',
+
+    v_ok_in:'تم تأكيد الحساب. أنت مسجّل دخول.', v_ok:'تم تأكيد الحساب. تقدر تسجّل دخول دلوقتي.', v_bad:'اللينك ده غلط أو منتهي. سجّل دخول أو استخدم "نسيت الباسورد".',
+    t_checkmail:'شوف إيميلك واضغط على لينك التأكيد، وبعدين ارجع هنا وسجّل دخول.', t_reset:'لو الإيميل ده له حساب، لينك إعادة التعيين في طريقه ليك.',
+    e_fill:'اكتب الإيميل والباسورد.', e_len:'الباسورد لازم يكون 8 حروف على الأقل.', e_match:'الباسوردين مش متطابقين.', e_email:'اكتب الإيميل الأول.',
+    pw_done:'اتغير الباسورد.', pw_wrong:'الباسورد الحالي غلط.', sent:'اتبعت.', sent_cmd:'اتبعت. وافق عليه من اللابتوب.', no_session:'اللابتوب مش متصل.', bad_json:'ده مش JSON صحيح.',
+    coords:(x,y)=>`مكان الضغط x=${x}, y=${y} اتحط في "متقدم". اضغط "إرسال" هناك علشان تضغط.`,
+  },
+};
+let lang = localStorage.getItem('lk_lang') || (navigator.language || '').startsWith('ar') ? 'ar' : 'en';
+if (localStorage.getItem('lk_lang')) lang = localStorage.getItem('lk_lang');
+const t = (k, ...a) => { const v = T[lang][k]; return typeof v === 'function' ? v(...a) : v; };
+const $ = (id) => document.getElementById(id);
+const show = (id, on) => $(id).classList.toggle('hidden', !on);
+const say = (id, text, cls) => { $(id).textContent = text || ''; $(id).className = cls || ''; };
+
+function applyLang() {
+  document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-t]').forEach((e) => { e.textContent = t(e.dataset.t); });
+  document.querySelectorAll('[data-ph]').forEach((e) => { e.placeholder = t(e.dataset.ph); });
+  $('lang').textContent = lang === 'ar' ? 'English' : 'العربية';
+}
+$('lang').onclick = () => { lang = lang === 'ar' ? 'en' : 'ar'; localStorage.setItem('lk_lang', lang); applyLang(); render(); };
+
+const hash = location.hash || '';
+const q = new URLSearchParams(hash.replace(/^#/, ''));
+const fromVerify = q.get('type') === 'signup' || q.get('type') === 'email_change';
+const linkError = q.get('error_description');
+let recovery = q.get('type') === 'recovery';
+
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true } });
+let signUpMode = false, session = null, poll = null, live = false, pairRequested = false;
+
+function banner() {
+  const b = $('banner');
+  if (linkError) { b.textContent = t('v_bad'); b.className = 'card err'; }
+  else if (fromVerify) { b.textContent = session ? t('v_ok_in') : t('v_ok'); b.className = 'card ok'; }
+  else b.className = 'card hidden';
+}
+
+function render() {
+  if (fromVerify && !linkError) { document.body.innerHTML = '<div style="font-family:system-ui;max-width:420px;margin:15vh auto;text-align:center;padding:16px"><img src="img/logo-48.png" width="64" height="64" alt="" style="border-radius:14px"><div style="font-size:48px">&#10003;</div><h2>Email confirmed</h2><p>Go back to the Tether app and sign in.</p><h2 dir="rtl">تم تأكيد الإيميل</h2><p dir="rtl">ارجع لتطبيق Tether وسجّل دخول.</p></div>'; return; }
+  const signedIn = !!session;
+  show('auth', !signedIn && !recovery); show('recovery', recovery); show('app', signedIn && !recovery);
+  show('acct', signedIn); $('menuemail').textContent = signedIn ? session.user.email : ''; $('who').textContent = signedIn ? session.user.email.split('@')[0] : '';
+  $('authtitle').textContent = signUpMode ? t('signup') : t('signin');
+  $('go').textContent = signUpMode ? t('signup') : t('signin');
+  $('toggle').textContent = signUpMode ? t('have') : t('no_acct');
+  show('pass2', signUpMode);
+  banner(); paintStatus();
+  clearInterval(poll);
+  if (signedIn && !recovery) { poll = setInterval(tick, 2500); tick(); }
+}
+function paintStatus() {
+  const d = $('dot'); d.className = 'dot ' + (live ? 'on' : (pairRequested ? 'wait' : 'off'));
+  $('stat').textContent = live ? t('s_on') : (pairRequested ? t('s_wait') : t('s_off'));
+  $('statsub').textContent = live ? t('s_on_sub') : (pairRequested ? t('s_wait_sub') : t('s_off_sub'));
+}
+
+sb.auth.onAuthStateChange((ev, s) => { session = s; if (ev === 'PASSWORD_RECOVERY') recovery = true; render(); if (location.hash) history.replaceState(null, '', location.pathname); });
+sb.auth.getSession().then(({ data }) => { session = data.session; render(); });
+
+$('toggle').onclick = () => { signUpMode = !signUpMode; say('authmsg', ''); render(); };
+$('go').onclick = async () => {
+  const email = $('email').value.trim(), pw = $('pass').value; say('authmsg', '');
+  if (!email || !pw) return say('authmsg', t('e_fill'), 'err');
+  if (signUpMode) {
+    if (pw.length < 8) return say('authmsg', t('e_len'), 'err');
+    if (pw !== $('pass2').value) return say('authmsg', t('e_match'), 'err');
+    const { error } = await sb.auth.signUp({ email, password: pw, options: { emailRedirectTo: location.origin + location.pathname } });
+    if (error) return say('authmsg', error.message, 'err');
+    signUpMode = false; render(); say('authmsg', t('t_checkmail'), 'ok');
+  } else {
+    const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+    if (error) say('authmsg', error.message, 'err');
+  }
+};
+$('forgot').onclick = async () => {
+  const email = $('email').value.trim(); if (!email) return say('authmsg', t('e_email'), 'err');
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  say('authmsg', error ? error.message : t('t_reset'), error ? 'err' : 'ok');
+};
+$('rgo').onclick = async () => {
+  const pw = $('rpass').value; if (pw.length < 8) return say('rmsg', t('e_len'), 'err');
+  const { error } = await sb.auth.updateUser({ password: pw }); if (error) return say('rmsg', error.message, 'err');
+  recovery = false; render();
+};
+$('acctbtn').onclick = (e) => { e.stopPropagation(); $('menu').classList.toggle('hidden'); };
+document.addEventListener('click', () => $('menu').classList.add('hidden'));
+$('m-out').onclick = () => sb.auth.signOut();
+$('m-pw').onclick = () => { show('changepw', true); window.scrollTo(0, 0); };
+$('cpcancel').onclick = () => show('changepw', false);
+$('cpgo').onclick = async () => {
+  const n1 = $('np1').value;
+  if (n1.length < 8) return say('cpmsg', t('e_len'), 'err');
+  if (n1 !== $('np2').value) return say('cpmsg', t('e_match'), 'err');
+  const re = await sb.auth.signInWithPassword({ email: session.user.email, password: $('cur').value });
+  if (re.error) return say('cpmsg', t('pw_wrong'), 'err');
+  const { error } = await sb.auth.updateUser({ password: n1 });
+  say('cpmsg', error ? error.message : t('pw_done'), error ? 'err' : 'ok');
+};
+
+let idn = null, sessionId = null, frameW = 0, frameH = 0;
+async function ensureId() { if (!idn) idn = await identity(); return idn; }
+async function paintCode() { const i = await ensureId(); $('code').textContent = await fingerprint(i.pubBytes); }
+
+$('pairbtn').onclick = async () => {
+  const i = await ensureId();
+  await sb.from('controllers').delete().eq('public_key', i.pub);
+  const { error } = await sb.from('controllers').insert({ name: 'Web console', public_key: i.pub });
+  if (!error) { pairRequested = true; paintStatus(); }
+  say('pairmsg', error ? error.message : t('pair_sent'), error ? 'err' : 'ok');
+};
+
+async function sendAction(text) {
+  say('amsg', '');
+  let m; try { m = JSON.parse(text); } catch { return say('amsg', t('bad_json'), 'err'); }
+  const type = m.type; delete m.type;
+  if (typeof type !== 'string') return say('amsg', t('bad_json'), 'err');
+  if (!sessionId) return say('amsg', t('no_session'), 'err');
+  const i = await ensureId();
+  let { data: reg } = await sb.from('controllers').select('id').eq('public_key', i.pub);
+  if (!reg || !reg.length) { await sb.from('controllers').insert({ name: 'Web console', public_key: i.pub }); ({ data: reg } = await sb.from('controllers').select('id').eq('public_key', i.pub)); }
+  const id = crypto.randomUUID(), ts = Math.floor(Date.now() / 1000), payload = JSON.stringify({ type, params: m });
+  const sig = await signAction(i, id, sessionId, ts, payload);
+  const { error } = await sb.from('actions').insert({ id, session_id: sessionId, type, params: m, controller_id: reg[0].id, payload, sig, sig_ts: ts });
+  say('amsg', error ? error.message : t('sent'), error ? 'err' : 'ok');
+}
+$('ashot').onclick = () => sendAction('{"type":"screenshot"}');
+$('frame').onclick = (e) => {
+  const r = e.target.getBoundingClientRect();
+  const x = Math.round((e.clientX - r.left) * frameW / r.width), y = Math.round((e.clientY - r.top) * frameH / r.height);
+  say('coords', t('coords', x, y));
+};
+
+async function tick() {
+  if (!session || recovery) return;
+  const { data: s } = await sb.from('sessions').select('id').eq('status', 'active').order('created_at', { ascending: false }).limit(1);
+  sessionId = s && s[0] ? s[0].id : null; live = !!sessionId; if (live) pairRequested = false;
+  paintStatus(); paintCode();
+  if (sessionId) {
+    const { data: f } = await sb.from('frames').select('image_b64,width,height').eq('session_id', sessionId).maybeSingle();
+    if (f) { frameW = f.width; frameH = f.height; $('frame').src = 'data:image/jpeg;base64,' + f.image_b64; show('frame', true); }
+  }
+  const { data } = await sb.from('commands').select('command_key,status,result').order('created_at', { ascending: false }).limit(6);
+}
+applyLang(); render();
+</script>
+</body>
+</html>

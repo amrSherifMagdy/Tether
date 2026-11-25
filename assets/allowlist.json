@@ -1,0 +1,33 @@
+{
+  "_comment": "Only commands listed here can ever run. The assistant refers to them by key. Edit this file to add or remove programs, then rebuild the desktop app.",
+  "commands": {
+    "open_notepad": {
+      "description": "Open Notepad",
+      "executable": "notepad.exe",
+      "fixedArgs": [],
+      "allowExtraArgs": false
+    },
+    "open_calculator": {
+      "description": "Open Calculator",
+      "executable": "calc.exe",
+      "fixedArgs": [],
+      "allowExtraArgs": false
+    },
+    "list_downloads": {
+      "description": "List files in the Downloads folder",
+      "executable": "powershell.exe",
+      "fixedArgs": [
+        "-NoProfile",
+        "-Command",
+        "Get-ChildItem $env:USERPROFILE\\Downloads | Select-Object -First 50 Name,Length,LastWriteTime | Format-Table -AutoSize | Out-String"
+      ],
+      "allowExtraArgs": false
+    },
+    "open_chatgpt": {
+      "description": "Open ChatGPT (https://chatgpt.com) in the default browser",
+      "type": "openUrl",
+      "url": "https://chatgpt.com/",
+      "allowExtraArgs": false
+    }
+  }
+}

@@ -1,0 +1,100 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Every command belongs to exactly one user. Nobody else can read or write it.
+    match /commands/{id} {
+      allow read: if request.auth != null && resource.data.ownerId == request.auth.uid;
+
+      // New commands must start as "pending" with no result. Nothing runs until you tap Approve on the laptop.
+      allow create: if request.auth != null
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.commandKey is string
+        && request.resource.data.commandKey.size() <= 64
+        && request.resource.data.args is list
+        && request.resource.data.args.size() <= 3
+        && request.resource.data.keys().hasOnly(['ownerId','commandKey','args','status','createdAt']);
+
+      // commandKey, args, ownerId and createdAt are frozen after create.
+      // Only status/result/finishedAt may change, and only along these transitions:
+      //   pending -> running | rejected | denied
+      //   running -> done | failed
+      allow update: if request.auth != null
+        && resource.data.ownerId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','result','finishedAt'])
+        && request.resource.data.status in ['running','rejected','denied','done','failed']
+        && (
+          (resource.data.status == 'pending' && request.resource.data.status in ['running','rejected','denied'])
+          || (resource.data.status == 'running' && request.resource.data.status in ['done','failed'])
+        )
+        // A claim (pending -> running) cannot carry a result.
+        && (request.resource.data.status != 'running' || !('result' in request.resource.data));
+
+      allow delete: if false;
+    }
+
+    function sess(sid) {
+      return get(/databases/$(database)/documents/sessions/$(sid)).data;
+    }
+
+    // Session mode. The laptop app only honours the session it started itself,
+    // so these rules are a second layer (frozen fields, owner only, active + unexpired sessions).
+    match /sessions/{sid} {
+      allow read: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      allow create: if request.auth != null
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.status == 'active'
+        && request.resource.data.keys().hasOnly(['ownerId','status','createdAt','expiresAt','durationMinutes'])
+        // No time limit by default: expiresAt/durationMinutes are optional. If present they are capped.
+        && (!('expiresAt' in request.resource.data)
+            || (request.resource.data.durationMinutes is int
+                && request.resource.data.durationMinutes <= 240
+                && request.resource.data.expiresAt <= request.time + duration.value(245, 'm')));
+      allow update: if request.auth != null
+        && resource.data.ownerId == request.auth.uid
+        && resource.data.status == 'active'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','endedAt'])
+        && request.resource.data.status in ['stopped','expired','ended'];
+      allow delete: if false;
+
+      match /actions/{aid} {
+        // Read by session ownership so list queries and listeners (without an ownerId filter) are allowed.
+        allow read: if request.auth != null && sess(sid).ownerId == request.auth.uid;
+        allow create: if request.auth != null
+          && request.resource.data.ownerId == request.auth.uid
+          && sess(sid).ownerId == request.auth.uid
+          && sess(sid).status == 'active'
+          && (!('expiresAt' in sess(sid)) || request.time < sess(sid).expiresAt)
+          && request.resource.data.status == 'pending'
+          && request.resource.data.type in ['screenshot','move','click','scroll','type','key','open_url','open_app','wait']
+          && request.resource.data.params is map
+          && request.resource.data.keys().hasOnly(['ownerId','type','params','status','createdAt']);
+        allow update: if request.auth != null
+          && resource.data.ownerId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','result','finishedAt'])
+          && (
+            (resource.data.status == 'pending' && request.resource.data.status in ['running','rejected'])
+            || (resource.data.status == 'running' && request.resource.data.status in ['done','failed'])
+          );
+        allow delete: if false;
+      }
+
+      match /frames/{fid} {
+        // Session ownership (not resource.data) so reading a not-yet-existing frame doc is allowed.
+        allow read: if request.auth != null && sess(sid).ownerId == request.auth.uid;
+        allow create: if request.auth != null
+          && request.resource.data.ownerId == request.auth.uid
+          && sess(sid).status == 'active'
+          && request.resource.data.keys().hasOnly(['ownerId','imageB64','width','height','capturedAt','actionId'])
+          && request.resource.data.imageB64.size() <= 900000;
+        allow update: if request.auth != null
+          && resource.data.ownerId == request.auth.uid
+          && request.resource.data.ownerId == resource.data.ownerId
+          && sess(sid).status == 'active'
+          && request.resource.data.keys().hasOnly(['ownerId','imageB64','width','height','capturedAt','actionId'])
+          && request.resource.data.imageB64.size() <= 900000;
+        allow delete: if false;
+      }
+    }
+  }
+}

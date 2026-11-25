@@ -1,0 +1,13 @@
+.dart_tool/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.idea/
+*.iml
+# Firebase config is generated per user by `flutterfire configure`
+lib/firebase_options.dart
+firebase.json
+.firebaserc
+.firebase/
+*.log
+__pycache__/

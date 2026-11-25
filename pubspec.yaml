@@ -1,0 +1,38 @@
+name: laptop_link
+description: Control allowlisted programs on your laptop remotely, with local approval for every command.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  supabase_flutter: ^2.8.0
+  path_provider: ^2.1.4
+  url_launcher: ^6.3.0
+  window_manager: ^0.4.2
+  ffi: ^2.1.0
+  image: ^4.2.0
+  cryptography: ^2.7.0
+  tray_manager: ^0.2.3
+  launch_at_startup: ^0.3.1
+  shared_preferences: ^2.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/allowlist.json
+    - assets/op.ps1
+    - assets/hot.ps1
+    - assets/shot.ps1
+    - assets/logo_knot.png
+    - assets/logo_lockup.jpg
+    - assets/tray_live.ico
+    - assets/tray_paused.ico
