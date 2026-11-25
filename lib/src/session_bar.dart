@@ -84,7 +84,7 @@ class SessionBar extends StatelessWidget {
                 children: [
                   Text(
                     'Allow: ${controller.approvalText}?',
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Colors.white,
@@ -154,7 +154,7 @@ class SessionBar extends StatelessWidget {
                   Text(
                     paused
                         ? 'Actions are refused until you press Resume'
-                        : 'Stop: button or ${SessionController.hotkeyLabel}   last: ${controller.lastAction}',
+                        : 'last: ${controller.lastAction}',
                     style: const TextStyle(color: Colors.white70, fontSize: 11),
                   ),
                 ],
